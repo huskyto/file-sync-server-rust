@@ -27,7 +27,10 @@ impl FileRepository {
             contents: HashMap::new(),
         }
     }
-    pub async fn get_file(&self, id: &str) -> Result<FileData, String> {
+    pub fn get(&self, id: &str) -> Option<FileDefinition> {
+        self.contents.get(id).cloned()
+    }
+    pub async fn get_file_data(&self, id: &str) -> Result<FileData, String> {
         let file_def = self.get(id).expect("File not found");
         match self.io_manager.get_file_content(&file_def).await {
             Ok(content) => {
@@ -36,19 +39,21 @@ impl FileRepository {
             Err(e) => Err(e)
         }
     }
-    pub async fn create_empty(&mut self, file_def: &FileDefinition) -> Result<bool, String> {
+    pub async fn create_empty(&mut self, file_def: &FileDefinition) -> Result<String, String> {
         if self.exists_named(file_def) {
             Err("File already exists".to_string())
         }
         else {
             let mut file_definition = file_def.clone();
-            file_definition.id = Util::new_id();
-            file_definition.size = 0;
+            let new_id = Util::new_id();
+            file_definition.id = Some(new_id.clone());
+            file_definition.size = Some(0);
             match self.io_manager.create_empty(&file_definition).await {
                 Ok(_) => {
+                    self.contents.insert(new_id.clone(), file_definition.clone());
                     let change = FileChange::new(file_definition, ChangeType::Create);
                     self.state.add_revision(change);
-                    Ok(true)
+                    Ok(new_id)
                 },
                 Err(e) => Err(e)
             }
@@ -56,7 +61,11 @@ impl FileRepository {
     }
     pub async fn update(&mut self, file_data: &FileData) -> Result<bool, String> {
         let file_def = &file_data.definition;
-        if self.contents.contains_key(&file_def.id) {
+        if file_def.id.is_none() {
+            return Err("No id in file definition".to_string())
+        }
+
+        if self.contents.contains_key(file_def.id.as_ref().unwrap()) {
             FileChange::new(file_def.clone(), ChangeType::Update)
         }
         else {
@@ -65,10 +74,10 @@ impl FileRepository {
         match self.io_manager.store_file_content(file_data).await {
             Ok(_) => {
                 let mut updated_def = file_def.clone();
-                updated_def.size = file_data.content.len() as u64;
+                updated_def.size = Some(file_data.content.len() as u64);
                 updated_def.checksum = Some(Util::checksum(&file_data.content));
                 let change = FileChange::new(updated_def, ChangeType::Update);
-                self.contents.insert(file_def.id.to_string(), file_def.clone());
+                self.contents.insert(file_def.id.clone().expect("No id"), file_def.clone());
                 self.state.add_revision(change);
                 Ok(true)
             },
@@ -88,7 +97,7 @@ impl FileRepository {
                 },
                 Err(e) => {
                     println!("Error: {}", e);
-                    return None;
+                    None
                 }
             }
         }
@@ -104,8 +113,5 @@ impl FileRepository {
     }
     pub fn exists_named(&self, file_def: &FileDefinition) -> bool {
         self.contents.values().any(|f| f.name == file_def.name && f.path == file_def.path)
-    }
-    pub fn get(&self, id: &str) -> Option<FileDefinition> {
-        self.contents.get(id).cloned()
     }
 }

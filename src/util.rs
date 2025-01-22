@@ -25,7 +25,7 @@ impl Util {
     }
     pub fn full_path(file_def: &FileDefinition) -> String {
         let path = Path::new(&Config::get_base_path())
-                    .join(&file_def.id);
+                    .join(file_def.id.as_ref().expect("No id in File Definition"));
                     // .join(&file_def.name);
         // let path = Path::new(&Config::get_base_path())
         //             .join(&file_def.path)

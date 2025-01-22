@@ -6,33 +6,33 @@ use serde::Serialize;
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct FileDefinition {
-    pub id: String,
     pub name: String,
     pub path: String,
-    pub size: u64,
+    pub id: Option<String>,
+    pub size: Option<u64>,
     pub checksum: Option<String>
 }
 impl FileDefinition {
     pub fn new(id: String, name: String, path: String) -> Self {
         Self {
-            id,
             name,
             path,
-            size: 0,
+            id: Some(id),
+            size: Some(0),
             checksum: None,
         }
     }
     pub fn with_checksum(id: String, name: String, path: String, checksum: String) -> Self {
         Self {
-            id,
             name,
             path,
-            size: 0,
+            id: Some(id),
+            size: Some(0),
             checksum: Some(checksum),
         }
     }
     pub fn validate(&self) -> bool {
-        !self.id.is_empty() && !self.name.is_empty() && !self.path.is_empty()
+        self.id.is_some() && !self.name.is_empty() && !self.path.is_empty()
     }
 }
 
