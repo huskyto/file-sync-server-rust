@@ -27,11 +27,16 @@ impl FileRepository {
             contents: HashMap::new(),
         }
     }
-    pub fn get(&self, id: &str) -> Option<FileDefinition> {
+
+    pub fn get_definition(&self, id: &str) -> Option<FileDefinition> {
         self.contents.get(id).cloned()
     }
+
     pub async fn get_file_data(&self, id: &str) -> Result<FileData, String> {
-        let file_def = self.get(id).expect("File not found");
+        let file_def = match self.get_definition(id) {
+            Some(res) => res,
+            None => return Err("File not found".to_string()),
+        };
         match self.io_manager.get_file_content(&file_def).await {
             Ok(content) => {
                 Ok(FileData::new(file_def, content))
@@ -39,6 +44,7 @@ impl FileRepository {
             Err(e) => Err(e)
         }
     }
+
     pub async fn create_empty(&mut self, file_def: &FileDefinition) -> Result<String, String> {
         if self.exists_named(file_def) {
             Err("File already exists".to_string())
@@ -59,6 +65,7 @@ impl FileRepository {
             }
         }
     }
+
     pub async fn update(&mut self, file_data: &FileData) -> Result<bool, String> {
         let file_def = &file_data.definition;
         if file_def.id.is_none() {
@@ -86,6 +93,7 @@ impl FileRepository {
             }
         }
     }
+
     pub async fn delete(&mut self, id: &str) -> Option<FileDefinition> {
         let res = self.contents.remove(id);
         if let Some(file) = &res {
@@ -105,12 +113,15 @@ impl FileRepository {
             None
         }
     }
+
     pub fn get_revision(&self) -> u64 {
         self.state.current_revision
     }
+
     pub fn exists(&self, id: &str) -> bool {
         self.contents.contains_key(id)
     }
+
     pub fn exists_named(&self, file_def: &FileDefinition) -> bool {
         self.contents.values().any(|f| f.name == file_def.name && f.path == file_def.path)
     }
