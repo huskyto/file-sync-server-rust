@@ -8,8 +8,10 @@ use rocket::serde::json::Json;
 use rocket::tokio::sync::Mutex;
 use std::sync::LazyLock;
 
+use crate::model::ChangePatch;
 use crate::model::FileData;
 use crate::model::FileDefinition;
+use crate::patcher::Patcher;
 use crate::repository::FileRepository;
 
 
@@ -60,5 +62,25 @@ pub async fn delete_file(file_id: &str) -> Result<Accepted<String>, NotFound<Str
     match REPOSITORY.lock().await.delete(file_id).await {
         Some(_res) => Ok(Accepted("Deleted".to_string())),
         None => Err(NotFound("File not found".to_string())),
+    }
+}
+
+
+#[post("/patch/<rev>", data = "<file_list>")]
+pub async fn get_patch(rev: u64, file_list: Json<Vec<FileDefinition>>) -> Result<Json<ChangePatch>, BadRequest<String>> {
+    if rev == 0 {
+        if file_list.len() > 0 {
+            Err(BadRequest("File list should be empty for initial patch!".to_string()))
+        }
+        else {
+            let repo = &REPOSITORY.lock().await;
+            match Patcher::get_patch(0, &file_list, repo) {
+                Some(patch) => Ok(Json::from(patch)),
+                None => Err(BadRequest("Initial patch creation failed!".to_string())),
+            }
+        }
+    }
+    else {
+        todo!()
     }
 }

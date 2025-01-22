@@ -57,6 +57,14 @@ pub struct ChangePatch {
     pub revision: u64,
     pub changes: Vec<FileChange>
 }
+impl ChangePatch {
+    pub fn new(revision: u64, changes: Vec<FileChange>) -> Self {
+        Self {
+            revision,
+            changes,
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct RevisionHistory {
