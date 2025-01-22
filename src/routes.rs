@@ -30,7 +30,7 @@ pub async fn create_empty(fd: Json<FileDefinition>) -> Result<Created<String>, B
 #[put("/file/<file_id>", data = "<content>")]
 pub async fn update_file(file_id: &str, content: Vec<u8>) -> Result<Accepted<String>, BadRequest<String>> {
     let mut rep_lock = REPOSITORY.lock().await;
-    match rep_lock.get_definition(&file_id) {
+    match rep_lock.get_definition(file_id) {
         Some(file_def) => {
             let file_data = FileData::new(file_def, content);
             match rep_lock.update(&file_data).await {

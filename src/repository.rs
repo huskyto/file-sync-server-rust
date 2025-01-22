@@ -83,8 +83,8 @@ impl FileRepository {
                 let mut updated_def = file_def.clone();
                 updated_def.size = Some(file_data.content.len() as u64);
                 updated_def.checksum = Some(Util::checksum(&file_data.content));
-                let change = FileChange::new(updated_def, ChangeType::Update);
-                self.contents.insert(file_def.id.clone().expect("No id"), file_def.clone());
+                let change = FileChange::new(updated_def.clone(), ChangeType::Update);
+                self.contents.insert(file_def.id.clone().expect("No id"), updated_def.clone());
                 self.state.add_revision(change);
                 Ok(true)
             },
