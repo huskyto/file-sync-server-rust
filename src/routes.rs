@@ -81,6 +81,10 @@ pub async fn get_patch(rev: u64, file_list: Json<Vec<FileDefinition>>) -> Result
         }
     }
     else {
-        todo!()
+        let repo = &REPOSITORY.lock().await;
+            match Patcher::get_patch(rev, &file_list, repo) {
+                Some(patch) => Ok(Json::from(patch)),
+                None => Err(BadRequest("Update patch creation failed!".to_string())),
+            }
     }
 }

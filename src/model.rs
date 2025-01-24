@@ -1,16 +1,19 @@
 
+use std::time::SystemTime;
+
 use serde::Deserialize;
 use serde::Serialize;
 
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(crate = "rocket::serde")]
 pub struct FileDefinition {
     pub name: String,
     pub path: String,
     pub id: Option<String>,
     pub size: Option<u64>,
-    pub checksum: Option<String>
+    pub checksum: Option<String>,
+    pub last_update: Option<SystemTime>
 }
 impl FileDefinition {
     pub fn new(id: String, name: String, path: String) -> Self {
@@ -20,6 +23,7 @@ impl FileDefinition {
             id: Some(id),
             size: Some(0),
             checksum: None,
+            last_update: None
         }
     }
     pub fn with_checksum(id: String, name: String, path: String, checksum: String) -> Self {
@@ -29,6 +33,7 @@ impl FileDefinition {
             id: Some(id),
             size: Some(0),
             checksum: Some(checksum),
+            last_update: None
         }
     }
     pub fn validate(&self) -> bool {
@@ -36,7 +41,7 @@ impl FileDefinition {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
 pub struct FileChange {
     pub file: FileDefinition,
@@ -71,6 +76,7 @@ pub struct RevisionHistory {
     pub revisions: Vec<FileChange>
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct FileRepositoryState {
     pub current_revision: u64,
     pub history: RevisionHistory
@@ -82,12 +88,14 @@ impl FileRepositoryState {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(crate = "rocket::serde")]
 pub enum ChangeType {
     Create,
     Update,
-    Delete
+    Delete,
+    DoDownload,
+    DoUpload
 }
 
 #[derive(Serialize, Deserialize)]
