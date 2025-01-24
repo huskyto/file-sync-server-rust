@@ -129,16 +129,12 @@ impl FileRepository {
         self.state.current_revision
     }
 
-    pub fn exists(&self, id: &str) -> bool {
-        self.contents.contains_key(id)
-    }
-
     pub fn exists_named(&self, file_def: &FileDefinition) -> bool {
         self.contents.values().any(|f| f.name == file_def.name && f.path == file_def.path)
     }
 
     pub fn get_all_entries(&self) -> Vec<&FileDefinition> {
-        self.contents.values().into_iter().collect()
+        self.contents.values().collect()
     }
 
 

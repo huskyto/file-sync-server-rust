@@ -19,37 +19,11 @@ impl Util {
 
         path.exists()
     }
-    pub fn validate_file(full_path: &str) -> bool {
-        let path = Path::new(full_path);
-        path.exists()
-    }
     pub fn full_path(file_def: &FileDefinition) -> String {
         let path = Path::new(&Config::get_base_path())
                     .join(file_def.id.as_ref().expect("No id in File Definition"));
-                    // .join(&file_def.name);
-        // let path = Path::new(&Config::get_base_path())
-        //             .join(&file_def.path)
-        //             .join(&file_def.name);
 
         path.to_str().expect("Invalid path").to_string()
-    }
-    // pub fn full_path_with(path: &str, name: &str) -> String {
-    //     let path = Path::new(&Config::get_base_path())
-    //                 .join(path)
-    //                 .join(name);
-
-    //     path.to_str().expect("Invalid path").to_string()
-    // }
-    pub fn split_full_path(full_path: &str) -> (String, String) {
-        let _path = Path::new(full_path);
-        let path = _path.parent().expect("Invalid path")
-                    .to_str().expect("Invalid path")
-                    .to_string();
-        let name = _path.file_name().expect("Invalid file name")
-                .to_str().expect("Invalid file name")
-                .to_string();
-
-        (path, name)
     }
 
     pub fn checksum(content: &Vec<u8>) -> String {
