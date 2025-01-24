@@ -1,0 +1,3 @@
+[default.limits]
+json = "2 MB"
+bytes = "100 MB"
