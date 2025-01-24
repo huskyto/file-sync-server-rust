@@ -15,7 +15,7 @@ use crate::patcher::Patcher;
 use crate::repository::FileRepository;
 
 
-static REPOSITORY: LazyLock<Mutex<FileRepository>> = LazyLock::new(|| Mutex::new(FileRepository::new()));  // TODO load instead
+static REPOSITORY: LazyLock<Mutex<FileRepository>> = LazyLock::new(|| Mutex::new(FileRepository::load_default()));  // TODO load instead
 
 
 #[post("/file", data = "<fd>")]
