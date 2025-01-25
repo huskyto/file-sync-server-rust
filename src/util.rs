@@ -3,6 +3,7 @@ use std::path::Path;
 
 use rand::Rng;
 use rocket::tokio::fs;
+use xxhash_rust::xxh3;
 use rand::distributions::Alphanumeric;
 
 use crate::config::Config;
@@ -26,8 +27,8 @@ impl Util {
         path.to_str().expect("Invalid path").to_string()
     }
 
-    pub fn checksum(content: &Vec<u8>) -> String {
-        let digest = md5::compute(content);
+    pub fn checksum(content: &[u8]) -> String {
+        let digest = xxh3::xxh3_64(content);
         format!("{:x}", digest)
     }
     pub fn new_id() -> String {
